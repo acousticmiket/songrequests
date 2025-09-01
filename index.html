@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Acoustic Mike T — Song Requests</title>
+  <style>
+    :root { --bg:#0f1020; --card:#181a2f; --text:#f6f7fb; --muted:#b6b8c9; }
+    * { box-sizing:border-box }
+    body { margin:0; background:radial-gradient(1200px 600px at 20% -10%,#1f2250,transparent),var(--bg);
+           color:var(--text); font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+           min-height:100vh; display:flex; flex-direction:column; align-items:center; }
+    header { width:100%; max-width:900px; padding:24px 16px 8px; }
+    .title { font-size:clamp(1.4rem,2.5vw,2rem); margin:0 0 6px; }
+    .subtitle { margin:0; color:var(--muted); font-size:.98rem; }
+    .links { margin-top:10px; display:flex; gap:12px; flex-wrap:wrap; }
+    .links a { color:var(--text); text-decoration:none; background:#202345; border:1px solid #2d3160;
+               padding:8px 12px; border-radius:999px; font-weight:600; }
+    .container { width:100%; max-width:900px; padding:8px 16px 24px; flex:1; display:flex; flex-direction:column; gap:12px; }
+    .controls { display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+    #q { flex:1; min-width:220px; padding:14px 16px; font-size:1rem; border-radius:12px;
+         border:1px solid #2b2f57; background:#141630; color:var(--text); outline:none; }
+    .count { color:var(--muted); font-size:.9rem; white-space:nowrap; }
+    ul#songs { list-style:none; margin:0; padding:0; display:grid; gap:10px; }
+    .song { background:linear-gradient(180deg,var(--card),#15172b); border:1px solid #23264b; border-radius:14px; padding:14px 16px;
+             display:flex; justify-content:space-between; align-items:center; gap:10px; }
+    .meta { display:flex; flex-direction:column; gap:2px; min-width:0; }
+    .song-title { font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .song-artist { color:var(--muted); font-size:.92rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    button.req { appearance:none; border:1px solid #2d3160; background:#22254a; color:var(--text);
+                 padding:10px 14px; border-radius:10px; cursor:pointer; font-weight:700; }
+    footer { color:var(--muted); padding:24px 16px; text-align:center; }
+    .empty { color:var(--muted); padding:16px 2px; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1 class="title">Acoustic Mike T — Song Requests</h1>
+    <p class="subtitle">Scroll, find a song, and we’ll open a text to Mike with your request.</p>
+    <div class="links">
+      <a href="https://instagram.com/acousticmiket" target="_blank" rel="noopener">Instagram @acousticmiket</a>
+      <a href="https://facebook.com/acousticmiket" target="_blank" rel="noopener">Facebook /acousticmiket</a>
+      <a href="https://venmo.com/u/Mike-Tesler" target="_blank" rel="noopener">Tip on Venmo @Mike-Tesler</a>
+    </div>
+  </header>
+
+  <div class="container">
+    <div class="controls">
+      <input id="q" type="search" placeholder="Search by title or artist…" autocomplete="off" />
+      <span class="count" id="count"></span>
+    </div>
+    <ul id="songs" aria-live="polite"></ul>
+    <div class="empty" id="empty" style="display:none;">No matching songs.</div>
+  </div>
+
+  <footer>
+    <small>If SMS doesn’t open on your device, the request text is pre-filled—just paste it into a text to +15165211009.</small>
+  </footer>
+
+  <script>
+    // Minimal placeholder list; you can replace this with your full list if needed.
+    const ITEMS = [
+      {"artist":"Eagles","title":"Hotel California"},
+      {"artist":"Oasis","title":"Wonderwall"},
+      {"artist":"Goo Goo Dolls","title":"Iris"}
+    ];
+    const PHONE = "+15165211009";
+
+    const list = document.getElementById('songs');
+    const q = document.getElementById('q');
+    const countEl = document.getElementById('count');
+    const empty = document.getElementById('empty');
+
+    function render(items) {
+      list.innerHTML = "";
+      empty.style.display = items.length ? 'none' : 'block';
+      for (const it of items) {
+        const li = document.createElement('li');
+        li.className = 'song';
+
+        const meta = document.createElement('div');
+        meta.className = 'meta';
+
+        const title = document.createElement('div');
+        title.className = 'song-title';
+        title.textContent = it.title || '(Untitled)';
+
+        const artist = document.createElement('div');
+        artist.className = 'song-artist';
+        artist.textContent = it.artist || '';
+
+        const btn = document.createElement('button');
+        btn.className = 'req';
+        btn.textContent = 'Text Request';
+        btn.addEventListener('click', () => handleClick(it));
+
+        meta.appendChild(title);
+        meta.appendChild(artist);
+        li.appendChild(meta);
+        li.appendChild(btn);
+        list.appendChild(li);
+      }
+      countEl.textContent = `${items.length} songs`;
+    }
+
+    function handleClick(it) {
+      const text = it.artist ? `Song Request: ${it.title} by ${it.artist}` : `Song Request: ${it.title}`;
+      const body = encodeURIComponent(text);
+      const smsUrl = `sms:${PHONE}?&body=${body}`;
+      window.location.href = smsUrl;
+    }
+
+    function filter() {
+      const term = q.value.trim().toLowerCase();
+      if (!term) return render(ITEMS);
+      const filtered = ITEMS.filter(it =>
+        (it.title || '').toLowerCase().includes(term) ||
+        (it.artist || '').toLowerCase().includes(term)
+      );
+      render(filtered);
+    }
+
+    render(ITEMS);
+    q.addEventListener('input', filter);
+  </script>
+</body>
+</html>
